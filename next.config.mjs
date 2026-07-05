@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const forGithubPages = process.env.GITHUB_PAGES === 'true';
-const repoName = process.env.GITHUB_REPOSITORY?.split('/')?.[1] ?? 'portfoliosite';
+const repoName = process.env.GITHUB_REPOSITORY?.split('/')?.[1] ?? 'portfolio_site';
 const isUserSite = repoName.endsWith('.github.io');
 const basePath = forGithubPages && !isUserSite ? `/${repoName}` : '';
 
