@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,6 +34,14 @@ jobs:
         run: npm run build
         env:
           GITHUB_PAGES: true
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Verify build output
+        run: |
+          test -f out/index.html
+          test -f out/art/001.jpg
+          grep -q '/portfolio_site/art/001.jpg' out/index.html
+          echo "Build OK — image paths and assets verified"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
