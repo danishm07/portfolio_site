@@ -1,4 +1,7 @@
 import './globals.css';
+import { getBasePath } from '@/lib/assetPath';
+
+const basePath = getBasePath();
 
 export const metadata = {
   metadataBase: new URL('https://danishmohammed.com'),
@@ -26,7 +29,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href={`${basePath}/favicon.svg`} type="image/svg+xml" />
       </head>
       <body>{children}</body>
     </html>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { assetPath } from '@/lib/assetPath';
 import { projects } from '@/data/projects';
 import { createCarouselEngine, getRelativeIndex, isMobileViewport } from '@/lib/carouselEngine';
 import { extractMutedTone } from '@/lib/extractImageTone';
@@ -106,7 +107,7 @@ export default function Carousel() {
     const project = projects[activeIndex];
     if (!project) return undefined;
 
-    extractMutedTone(project.art).then((target) => {
+    extractMutedTone(assetPath(project.art)).then((target) => {
       if (cancelled) return;
 
       const start = { ...glowToneRef.current };
@@ -140,7 +141,7 @@ export default function Carousel() {
 
   useEffect(() => {
     projects.forEach((project) => {
-      extractMutedTone(project.art);
+      extractMutedTone(assetPath(project.art));
     });
   }, []);
 

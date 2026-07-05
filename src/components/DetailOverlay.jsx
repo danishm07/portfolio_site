@@ -12,6 +12,7 @@ import {
   OVERLAY_PANEL_DELAY,
   OVERLAY_PANEL_FADE,
 } from '@/lib/motion';
+import { assetPath } from '@/lib/assetPath';
 import styles from './DetailOverlay.module.css';
 
 function rectToTransform(rect) {
@@ -342,7 +343,7 @@ export default function DetailOverlay({
         <div ref={artSectionRef} className={styles.artSection}>
           {!imgError ? (
             <img
-              src={project.art}
+              src={assetPath(project.art)}
               alt=""
               className={styles.artImage}
               onError={() => setImgError(true)}
@@ -373,7 +374,7 @@ export default function DetailOverlay({
 
       <div ref={morphRef} className={styles.morphShell} aria-hidden="true">
         {!imgError ? (
-          <img src={project.art} alt="" className={styles.morphImage} draggable={false} />
+          <img src={assetPath(project.art)} alt="" className={styles.morphImage} draggable={false} />
         ) : (
           <div className={styles.morphPlaceholder} />
         )}

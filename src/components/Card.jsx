@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { assetPath } from '@/lib/assetPath';
 import styles from './Card.module.css';
 
 export default function Card({
@@ -36,7 +37,7 @@ export default function Card({
         <div className={styles.art} data-card-art>
           {!imgError ? (
             <img
-              src={project.art}
+              src={assetPath(project.art)}
               alt=""
               className={styles.artImage}
               onError={() => setImgError(true)}

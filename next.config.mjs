@@ -8,6 +8,9 @@ const basePath = forGithubPages && !isUserSite ? `/${repoName}` : '';
 const nextConfig = {
   ...(forGithubPages ? { output: 'export' } : {}),
   ...(basePath ? { basePath, assetPrefix: basePath } : {}),
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   images: { unoptimized: true },
   webpack: (config, { dev }) => {
     if (dev) {
