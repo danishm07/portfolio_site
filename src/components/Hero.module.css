@@ -1,0 +1,110 @@
+.hero {
+  position: relative;
+  min-height: 22vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  overflow: hidden;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  animation: heroCanvasIn 0.8s ease both;
+}
+
+@keyframes heroCanvasIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes heroNameIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroRuleIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes heroDescIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 3.5rem 1.5rem 0.5rem;
+  pointer-events: none;
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(32px, 4.5vw, 48px);
+  color: var(--ink);
+  line-height: 1.1;
+  white-space: nowrap;
+  animation: heroNameIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+.firstName {
+  font-style: italic;
+}
+
+.lastName {
+  font-style: normal;
+}
+
+.rule {
+  width: 28px;
+  height: 0.5px;
+  background: var(--rule);
+  margin: 1rem auto;
+  transform-origin: center;
+  animation: heroRuleIn 0.4s ease 0.5s both;
+}
+
+.descriptor {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dust);
+  animation: heroDescIn 0.5s ease 0.65s both;
+}
+
+@media (max-width: 767px) {
+  .canvas {
+    display: none;
+    animation: none;
+  }
+
+  .name {
+    white-space: normal;
+  }
+}

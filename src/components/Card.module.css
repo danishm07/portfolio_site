@@ -1,0 +1,170 @@
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--card-width, 320px);
+  height: var(--card-height, 420px);
+  background: var(--cream);
+  border: 0.5px solid var(--rule);
+  cursor: pointer;
+  will-change: transform, opacity;
+  transition: border-color 0.3s ease;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--cream);
+}
+
+.card.active .inner {
+  animation: cardFloat 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes cardFloat {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-4px);
+  }
+}
+
+.card.active:hover {
+  border-color: var(--sage);
+}
+
+.card.concealed {
+  visibility: hidden;
+}
+
+.card.concealed.active .inner {
+  animation: none;
+  transform: translateY(0);
+}
+
+.art {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  pointer-events: none;
+}
+
+.artImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.artPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: var(--dust);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderNo {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--cream);
+  opacity: 0.5;
+}
+
+.divider {
+  height: 0.5px;
+  background: var(--rule);
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.65rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  pointer-events: none;
+}
+
+.catalogueNo {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--sage);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: normal;
+  font-size: 17px;
+  color: var(--ink);
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.medium {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 10px;
+  color: var(--dust);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+  .card {
+    width: var(--card-width, 260px);
+    height: var(--card-height, 340px);
+  }
+
+  .title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 767px) {
+  .card {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 82vw;
+    max-width: 380px;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    min-height: unset;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    transform: none !important;
+    opacity: 1 !important;
+    backface-visibility: visible;
+  }
+
+  .title {
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .medium {
+    white-space: normal;
+  }
+}
