@@ -12,7 +12,7 @@ import {
   OVERLAY_PANEL_DELAY,
   OVERLAY_PANEL_FADE,
 } from '@/lib/motion';
-import { assetPath } from '@/lib/assetPath';
+import { artPath, assetPath, openPdfPopup } from '@/lib/assetPath';
 import styles from './DetailOverlay.module.css';
 
 function rectToTransform(rect) {
@@ -30,11 +30,19 @@ function rectToTransform(rect) {
 }
 
 function getCardElement(cardIndex, isMobile) {
-  return document.querySelector(
-    isMobile
-      ? `[data-mobile-card="${cardIndex}"]`
-      : `[data-carousel-index="${cardIndex}"]`
-  );
+  const selectors = [
+    `[data-mobile-card="${cardIndex}"]`,
+    `[data-grid-card="${cardIndex}"]`,
+    `[data-carousel-index="${cardIndex}"]`,
+  ];
+  if (!isMobile) {
+    selectors.reverse();
+  }
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (el) return el;
+  }
+  return null;
 }
 
 function getFreshArtRect(cardIndex, isMobile) {
@@ -56,6 +64,62 @@ function applyMorphTransform(el, rect) {
   });
 }
 
+function renderEmphasis(text) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
+function renderAboutBody(body, styles) {
+  const paragraphs = body.split(/\n\n+/).filter(Boolean);
+  return (
+    <div className={styles.aboutBody}>
+      {paragraphs.map((paragraph) => (
+        <p key={paragraph.slice(0, 24)} className={`${styles.body} serifBlock`}>
+          {renderEmphasis(paragraph)}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function renderProjectBody(body, writeup, styles) {
+  const bodyClass = `${styles.body} serifBlock`;
+
+  if (!writeup) {
+    return <p className={bodyClass}>{body}</p>;
+  }
+
+  const splitIndex = body.indexOf('\n\n');
+  if (splitIndex === -1) {
+    return <p className={bodyClass}>{body}</p>;
+  }
+
+  const lead = body.slice(0, splitIndex);
+  const rest = body.slice(splitIndex + 2);
+
+  return (
+    <>
+      <p className={bodyClass}>{lead}</p>
+      <p className={styles.writeupCta}>
+        <a
+          href={writeup}
+          className={styles.writeupCtaLink}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Read the full writeup →
+        </a>
+      </p>
+      {rest && <p className={bodyClass}>{rest}</p>}
+    </>
+  );
+}
+
 export default function DetailOverlay({
   project,
   cardRect,
@@ -73,13 +137,30 @@ export default function DetailOverlay({
   const timelineRef = useRef(null);
   const closingRef = useRef(false);
   const openedRef = useRef(false);
+  const openStartedRef = useRef(false);
   const cardArtRectRef = useRef(null);
+  const touchStartYRef = useRef(null);
   const [imgError, setImgError] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const isAbout = project.id === 'about';
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     setImgError(false);
     openedRef.current = false;
+    openStartedRef.current = false;
   }, [project.id]);
+
+  useEffect(() => {
+    if (isOpen) return;
+    openedRef.current = false;
+    openStartedRef.current = false;
+  }, [isOpen]);
 
   const killTimeline = () => {
     timelineRef.current?.kill();
@@ -94,6 +175,12 @@ export default function DetailOverlay({
     return fresh ?? cardArtRectRef.current ?? cardRect ?? null;
   }, [cardIndex, cardRect, isMobile]);
 
+  const finishClose = useCallback(() => {
+    closingRef.current = false;
+    onRevealCard?.();
+    onClose();
+  }, [onClose, onRevealCard]);
+
   const showPanelFallback = useCallback(() => {
     const panel = panelRef.current;
     const backdrop = backdropRef.current;
@@ -101,11 +188,17 @@ export default function DetailOverlay({
     if (!panel || !backdrop) return;
 
     killTimeline();
-    gsap.set(morph, { opacity: 0, display: 'none', clearProps: 'transform' });
+    openStartedRef.current = true;
+    if (morph) {
+      gsap.set(morph, { opacity: 0, display: 'none', clearProps: 'transform' });
+    }
     gsap.set(backdrop, { opacity: 1 });
     gsap.set(panel, { opacity: 1 });
+    if (isMobile && overlayRef.current) {
+      gsap.set(overlayRef.current, { y: 0, clearProps: 'transform' });
+    }
     openedRef.current = true;
-  }, []);
+  }, [isMobile]);
 
   const runDesktopOpen = useCallback(() => {
     const morph = morphRef.current;
@@ -115,14 +208,30 @@ export default function DetailOverlay({
     if (!morph || !panel || !backdrop || !artSection) return false;
 
     const startRect = resolveCardRect();
-    if (!startRect) return false;
-
-    cardArtRectRef.current = startRect;
-    const endRect = artSection.getBoundingClientRect();
 
     killTimeline();
     closingRef.current = false;
     openedRef.current = false;
+
+    if (!startRect) {
+      gsap.set(morph, { opacity: 0, display: 'none', clearProps: 'transform' });
+      gsap.set(backdrop, { opacity: 0 });
+      gsap.set(panel, { opacity: 0 });
+      const tl = gsap.timeline({
+        onComplete: () => {
+          openedRef.current = true;
+        },
+      });
+      timelineRef.current = tl;
+      tl.to(backdrop, { opacity: 1, duration: OVERLAY_BACKDROP_FADE, ease: 'power2.out' }, 0);
+      tl.to(panel, { opacity: 1, duration: OVERLAY_PANEL_FADE, ease: 'power3.out' }, 0.1);
+      return true;
+    }
+
+    cardArtRectRef.current = startRect;
+
+    const endRect = artSection.getBoundingClientRect();
+    if (!endRect.width || !endRect.height) return false;
 
     gsap.set(morph, { opacity: 1, display: 'block' });
     applyMorphTransform(morph, startRect);
@@ -167,13 +276,19 @@ export default function DetailOverlay({
     const backdrop = backdropRef.current;
     const artSection = artSectionRef.current;
     if (!morph || !panel || !backdrop || !artSection) {
-      onClose();
+      finishClose();
       return;
     }
 
     const startRect = resolveCardRect();
     if (!startRect) {
-      onClose();
+      killTimeline();
+      closingRef.current = true;
+      openedRef.current = false;
+      const tl = gsap.timeline({ onComplete: finishClose });
+      timelineRef.current = tl;
+      tl.to(panel, { opacity: 0, duration: OVERLAY_MORPH_CLOSE, ease: EASE_CLOSE }, 0);
+      tl.to(backdrop, { opacity: 0, duration: OVERLAY_MORPH_CLOSE, ease: 'power2.inOut' }, 0);
       return;
     }
 
@@ -189,16 +304,7 @@ export default function DetailOverlay({
     gsap.set(panel, { opacity: 0 });
     gsap.set(backdrop, { opacity: 1 });
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        closingRef.current = false;
-        gsap.set(morph, { opacity: 0, display: 'none', clearProps: 'transform' });
-        gsap.set(backdrop, { clearProps: 'opacity' });
-        gsap.set(panel, { clearProps: 'opacity' });
-        onRevealCard?.();
-        onClose();
-      },
-    });
+    const tl = gsap.timeline({ onComplete: finishClose });
     timelineRef.current = tl;
 
     tl.to(backdrop, { opacity: 0, duration: OVERLAY_MORPH_CLOSE, ease: 'power2.inOut' }, 0);
@@ -212,7 +318,8 @@ export default function DetailOverlay({
       },
       0
     );
-  }, [onClose, onRevealCard, resolveCardRect]);
+    tl.set(morph, { opacity: 0, display: 'none', clearProps: 'transform' }, OVERLAY_MORPH_CLOSE);
+  }, [finishClose, resolveCardRect]);
 
   const runMobileOpen = useCallback(() => {
     const overlay = overlayRef.current;
@@ -234,8 +341,9 @@ export default function DetailOverlay({
       },
     });
     timelineRef.current = tl;
+    openStartedRef.current = true;
 
-    tl.to(overlay, { y: 0, duration: OVERLAY_MORPH_OPEN, ease: EASE_OPEN, force3D: true }, 0);
+    tl.to(overlay, { y: 0, duration: 0.4, ease: EASE_OPEN, force3D: true }, 0);
     tl.to(panel, { opacity: 1, duration: OVERLAY_PANEL_FADE, ease: 'power2.out' }, 0.1);
 
     return true;
@@ -246,7 +354,7 @@ export default function DetailOverlay({
     const panel = panelRef.current;
     const backdrop = backdropRef.current;
     if (!overlay || !panel) {
-      onClose();
+      finishClose();
       return;
     }
 
@@ -254,28 +362,30 @@ export default function DetailOverlay({
     closingRef.current = true;
     openedRef.current = false;
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        closingRef.current = false;
-        gsap.set(overlay, { clearProps: 'transform' });
-        gsap.set(panel, { clearProps: 'opacity' });
-        if (backdrop) gsap.set(backdrop, { clearProps: 'opacity' });
-        onClose();
-      },
-    });
+    const tl = gsap.timeline({ onComplete: finishClose });
     timelineRef.current = tl;
 
     tl.to(panel, { opacity: 0, duration: 0.12, ease: 'power2.out' }, 0);
-    tl.to(overlay, { y: '100%', duration: OVERLAY_MORPH_CLOSE, ease: EASE_CLOSE, force3D: true }, 0);
+    tl.to(
+      overlay,
+      { y: '100%', duration: 0.4, ease: EASE_CLOSE, force3D: true },
+      0
+    );
     if (backdrop) {
-      tl.to(backdrop, { opacity: 0, duration: OVERLAY_MORPH_CLOSE, ease: 'power2.in' }, 0);
+      tl.to(backdrop, { opacity: 0, duration: 0.4, ease: 'power2.in' }, 0);
     }
-  }, [onClose]);
+  }, [finishClose]);
 
   const runOpen = useCallback(() => {
     if (isMobile) return runMobileOpen();
     return runDesktopOpen();
   }, [isMobile, runDesktopOpen, runMobileOpen]);
+
+  const tryOpen = useCallback(() => {
+    const started = runOpen();
+    openStartedRef.current = started;
+    return started;
+  }, [runOpen]);
 
   const handleClose = useCallback(() => {
     if (closingRef.current) return;
@@ -286,24 +396,55 @@ export default function DetailOverlay({
     }
   }, [isMobile, runDesktopClose, runMobileClose]);
 
-  useLayoutEffect(() => {
-    if (!isOpen) return;
-    if (!isMobile && !cardRect && cardIndex == null) return;
-    runOpen();
-  }, [isOpen, cardRect, cardIndex, isMobile, runOpen]);
+  const handleBackdropClick = useCallback(
+    (e) => {
+      if (e.target === backdropRef.current) handleClose();
+    },
+    [handleClose]
+  );
 
-  // Safety net: if open animation couldn't run (refs not ready on first paint), show content.
+  const handleTouchStart = useCallback((e) => {
+    touchStartYRef.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e) => {
+      if (touchStartYRef.current == null) return;
+      const deltaY = e.changedTouches[0].clientY - touchStartYRef.current;
+      touchStartYRef.current = null;
+      if (deltaY > 80) handleClose();
+    },
+    [handleClose]
+  );
+
+  useLayoutEffect(() => {
+    if (!mounted || !isOpen) return;
+    if (!isMobile && !cardRect && cardIndex == null) return;
+
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        tryOpen();
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [mounted, isOpen, cardRect, cardIndex, isMobile, tryOpen]);
+
   useEffect(() => {
-    if (!isOpen) return undefined;
+    if (!mounted || !isOpen) return undefined;
 
     const timer = window.setTimeout(() => {
-      if (!openedRef.current && !closingRef.current) {
+      if (!openStartedRef.current && !closingRef.current) {
         showPanelFallback();
       }
-    }, 80);
+    }, 150);
 
     return () => window.clearTimeout(timer);
-  }, [isOpen, showPanelFallback]);
+  }, [isOpen, mounted, showPanelFallback]);
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -313,39 +454,67 @@ export default function DetailOverlay({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isOpen, handleClose]);
 
+  if (!mounted) return null;
+
   const overlay = (
     <div
       ref={overlayRef}
-      className={styles.overlay}
+      className={`${styles.overlay} ${isMobile ? styles.overlayMobile : ''}`}
       role="dialog"
       aria-modal="true"
       aria-label={project.title}
+      onTouchStart={isMobile ? handleTouchStart : undefined}
+      onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
-      <div ref={backdropRef} className={styles.backdrop} aria-hidden="true" />
+      <div
+        ref={backdropRef}
+        className={styles.backdrop}
+        aria-hidden="true"
+        onClick={handleBackdropClick}
+      />
 
       <div ref={panelRef} className={styles.panel}>
+        {isMobile && <div className={styles.dragHandle} aria-hidden="true" />}
+
         <div className={styles.navStrip}>
           <button type="button" className={styles.closeBtn} onClick={handleClose}>
             ✕ Close
           </button>
-          {project.github && (
-            <a
-              href={project.github}
-              className={styles.githubLink}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub ↗
-            </a>
+          {!isAbout && (project.writeup || project.github) && (
+            <div className={styles.navLinks}>
+              {project.writeup && (
+                <a
+                  href={project.writeup}
+                  className={styles.writeupLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Writeup ↗
+                </a>
+              )}
+              {project.github && (
+                <a
+                  href={project.github}
+                  className={styles.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub ↗
+                </a>
+              )}
+            </div>
           )}
         </div>
 
-        <div ref={artSectionRef} className={styles.artSection}>
+        <div
+          ref={artSectionRef}
+          className={`${styles.artSection} ${isAbout ? styles.artSectionAbout : ''}`}
+        >
           {!imgError ? (
             <img
-              src={assetPath(project.art)}
+              src={artPath(project.art)}
               alt=""
-              className={styles.artImage}
+              className={`${styles.artImage} halftoneArt`}
               onError={() => setImgError(true)}
               draggable={false}
             />
@@ -357,28 +526,69 @@ export default function DetailOverlay({
         <div className={styles.divider} />
 
         <div className={styles.content}>
-          <p className={styles.catalogueNo}>Cat. no. {project.no}</p>
-          <h2 className={styles.title}>{project.title}</h2>
-          <p className={styles.medium}>{project.medium}</p>
-          <div className={styles.contentRule} />
-          <p className={styles.body}>{project.body}</p>
-          <div className={styles.tech}>
-            {project.tech.map((t) => (
-              <span key={t} className={styles.chip}>
-                {t}
-              </span>
-            ))}
-          </div>
+          {isAbout ? (
+            <>
+              <h2 className={`${styles.aboutTitle} serifBlock`}>{project.title}</h2>
+              <div className={styles.contentRule} />
+              {renderAboutBody(project.body, styles)}
+              <div className={styles.contentRule} />
+              <div className={styles.aboutMeta}>
+                <p>Illinois Institute of Technology · BS CS · Dec 2027</p>
+                <p>YC Startup School · Summer 2026</p>
+                <p>Chicago, IL</p>
+              </div>
+              <div className={styles.aboutLinks}>
+                {project.links?.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.url.startsWith('/') ? assetPath(link.url) : link.url}
+                    className={styles.aboutLink}
+                    onClick={(event) => {
+                      if (link.label === 'Resume') {
+                        openPdfPopup(event, link.url);
+                      }
+                    }}
+                    target={link.url.startsWith('http') ? '_blank' : undefined}
+                    rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  >
+                    {link.label} ↗
+                  </a>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className={styles.catalogueNo}>Cat. no. {project.no}</p>
+              <h2 className={`${styles.title} serifBlock`}>{project.title}</h2>
+              <p className={styles.medium}>{project.medium}</p>
+              {project.role && <p className={styles.role}>{project.role}</p>}
+              {project.period && <p className={styles.period}>{project.period}</p>}
+              <div className={styles.contentRule} />
+              {renderProjectBody(project.body, project.writeup, styles)}
+              <div className={styles.contentRule} />
+              {project.tech && (
+                <div className={styles.tech}>
+                  {project.tech.map((t) => (
+                    <span key={t} className={styles.chip}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      <div ref={morphRef} className={styles.morphShell} aria-hidden="true">
-        {!imgError ? (
-          <img src={assetPath(project.art)} alt="" className={styles.morphImage} draggable={false} />
-        ) : (
-          <div className={styles.morphPlaceholder} />
-        )}
-      </div>
+      {!isMobile && (
+        <div ref={morphRef} className={styles.morphShell} aria-hidden="true">
+          {!imgError ? (
+            <img src={artPath(project.art)} alt="" className={`${styles.morphImage} halftoneArt`} draggable={false} />
+          ) : (
+            <div className={styles.morphPlaceholder} />
+          )}
+        </div>
+      )}
     </div>
   );
 

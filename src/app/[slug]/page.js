@@ -6,7 +6,7 @@ export async function generateMetadata({ params }) {
   if (!project) return { title: 'Not Found' };
 
   return {
-    title: `${project.title} — Danish Mohammed`,
+    title: `${project.title} — About Me`,
     description: project.body.split('\n')[0],
     openGraph: {
       title: project.title,
@@ -28,9 +28,8 @@ export function generateStaticParams() {
     { slug: 'saelit' },
     { slug: 'kaplan' },
     { slug: 'aarete' },
-    { slug: 'marlts' },
-    { slug: 'wbengine' },
     { slug: 'tomea' },
+    { slug: 'marlts' },
   ];
 }
 

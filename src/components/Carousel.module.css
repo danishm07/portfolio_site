@@ -13,6 +13,48 @@
   --glow-b: 136;
 }
 
+.viewToggle {
+  position: absolute;
+  top: 0.5rem;
+  right: 2rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.toggleBtn {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dust);
+  transition: color 0.2s ease;
+}
+
+.toggleBtn:hover,
+.toggleActive {
+  color: var(--ink);
+}
+
+.toggleSep {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--dust);
+}
+
+.gridView {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1100px;
+  margin: 3rem auto 0;
+  padding: 0 2rem;
+}
+
 .floorGrid {
   position: absolute;
   left: -30%;
@@ -109,10 +151,23 @@
   display: none;
 }
 
+@media (max-width: 900px) {
+  .gridView {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 767px) {
   .section {
     min-height: auto;
     padding: 1.5rem 0 6rem;
+  }
+
+  .viewToggle {
+    right: 50%;
+    transform: translateX(50%);
+    top: auto;
+    bottom: 1.5rem;
   }
 
   .floorGrid,
@@ -126,16 +181,28 @@
 
   .mobileTrack {
     display: flex;
-    gap: 2rem;
+    gap: 16px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    padding: 2rem 10vw 3rem;
+    padding: 2rem 9vw 4rem;
     scrollbar-width: none;
   }
 
   .mobileTrack::-webkit-scrollbar {
     display: none;
+  }
+
+  .gridView {
+    grid-template-columns: 1fr;
+    margin-top: 2rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .gridView {
+    grid-template-columns: 1fr;
   }
 }
 

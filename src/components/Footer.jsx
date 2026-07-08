@@ -1,3 +1,4 @@
+import { openPdfPopup } from '@/lib/assetPath';
 import styles from './Footer.module.css';
 
 const LINKS = [
@@ -19,6 +20,11 @@ export default function Footer() {
             key={link.label}
             href={link.href}
             className={styles.link}
+            onClick={(event) => {
+              if (link.label === 'Resume') {
+                openPdfPopup(event, link.href);
+              }
+            }}
             target={link.href.startsWith('http') ? '_blank' : undefined}
             rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
           >

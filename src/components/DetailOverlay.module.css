@@ -5,6 +5,12 @@
   overflow: hidden;
 }
 
+.overlayMobile {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
 .backdrop {
   position: absolute;
   inset: 0;
@@ -25,6 +31,8 @@
   -webkit-overflow-scrolling: touch;
   background: var(--cream);
   will-change: opacity;
+  display: flex;
+  flex-direction: column;
 }
 
 .morphShell {
@@ -47,12 +55,22 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .morphPlaceholder {
   width: 100%;
   height: 100%;
   background: var(--dust);
+}
+
+.dragHandle {
+  width: 32px;
+  height: 4px;
+  background: var(--rule);
+  border-radius: 2px;
+  margin: 12px auto 0;
+  flex-shrink: 0;
 }
 
 .navStrip {
@@ -64,10 +82,12 @@
   top: 0;
   background: var(--cream);
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .closeBtn,
-.githubLink {
+.githubLink,
+.writeupLink {
   font-family: var(--font-sans);
   font-weight: 300;
   font-size: 9px;
@@ -79,22 +99,41 @@
   z-index: 11;
 }
 
+.writeupLink {
+  font-weight: 400;
+  color: var(--sage);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
 .closeBtn:hover,
-.githubLink:hover {
+.githubLink:hover,
+.writeupLink:hover {
   color: var(--ink);
 }
 
 .artSection {
   width: 100%;
-  height: 45vh;
+  height: 42vh;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
+}
+
+.artSectionAbout {
+  height: 40vh;
 }
 
 .artImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  transform: translateZ(0);
 }
 
 .artPlaceholder {
@@ -106,12 +145,14 @@
 .divider {
   height: 0.5px;
   background: var(--rule);
+  flex-shrink: 0;
 }
 
 .content {
-  max-width: 720px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 2rem;
+  width: 100%;
 }
 
 .catalogueNo {
@@ -133,10 +174,36 @@
   margin-bottom: 0.5rem;
 }
 
+.aboutTitle {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: normal;
+  font-size: 28px;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+
 .medium {
   font-family: var(--font-sans);
   font-weight: 300;
   font-size: 11px;
+  color: var(--dust);
+  margin-bottom: 0.35rem;
+}
+
+.role {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 10px;
+  color: var(--dust);
+  margin-bottom: 0.2rem;
+}
+
+.period {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 10px;
   color: var(--dust);
   margin-bottom: 2rem;
 }
@@ -145,18 +212,83 @@
   width: 28px;
   height: 0.5px;
   background: var(--rule);
-  margin-bottom: 2rem;
+  margin: 2rem 0;
 }
 
 .body {
   font-family: var(--font-serif);
-  font-style: italic;
+  font-style: normal;
   font-weight: 400;
   font-size: 16px;
   color: var(--ink);
-  line-height: 1.85;
+  line-height: 1.9;
   max-width: 560px;
+  white-space: pre-line;
+  margin-bottom: 0;
+}
+
+.writeupCta {
+  margin: 1.25rem 0 1.75rem;
+}
+
+.writeupCtaLink {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--sage);
+  transition: color 0.2s ease;
+}
+
+.writeupCtaLink:hover {
+  color: var(--ink);
+}
+
+.body strong {
+  font-weight: 500;
+}
+
+.aboutBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  max-width: 560px;
+}
+
+.aboutBody .body {
+  margin-bottom: 0;
+}
+
+.aboutMeta {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 10px;
+  color: var(--dust);
+  line-height: 1.8;
   margin-bottom: 2rem;
+}
+
+.aboutMeta p {
+  margin: 0;
+}
+
+.aboutLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.aboutLink {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  transition: color 0.2s ease;
+}
+
+.aboutLink:hover {
+  color: var(--sage);
 }
 
 .tech {
@@ -176,8 +308,10 @@
 }
 
 @media (max-width: 767px) {
-  .overlay {
-    border-radius: 12px 12px 0 0;
+  .overlayMobile .panel {
+    height: 90vh;
+    border-radius: 16px 16px 0 0;
+    margin-top: auto;
   }
 
   .morphShell {
@@ -185,10 +319,14 @@
   }
 
   .navStrip {
-    padding: 1rem 1.5rem;
+    padding: 0.5rem 1.5rem 1rem;
   }
 
   .content {
     padding: 1.5rem;
+  }
+
+  .body {
+    max-width: 520px;
   }
 }

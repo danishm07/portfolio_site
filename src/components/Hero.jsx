@@ -49,17 +49,24 @@ export default function Hero() {
     };
   }, []);
 
+  const handleAboutClick = () => {
+    window.dispatchEvent(new CustomEvent('portfolio:open-about'));
+  };
+
   return (
     <section ref={sectionRef} className={styles.hero} id="hero">
       <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
       <div ref={contentRef} className={styles.content}>
-        <h1 className={styles.name}>
-          <span className={styles.firstName}>Danish</span>{' '}
-          <span className={styles.lastName}>Mohammed</span>
-        </h1>
+        <h1 className={styles.name}>Danish Mohammed</h1>
         <div className={styles.rule} />
         <p className={styles.descriptor}>
-          AI Engineer &nbsp;·&nbsp; Chicago &nbsp;·&nbsp; IIT Dec 2027
+          Chicago &nbsp;·&nbsp; IIT Dec 2027
+        </p>
+        <p className={styles.aboutTrigger}>
+          <span className={styles.aboutSep}>— or —</span>{' '}
+          <button type="button" className={styles.aboutLink} onClick={handleAboutClick}>
+            &ldquo;About me&rdquo;
+          </button>
         </p>
       </div>
     </section>

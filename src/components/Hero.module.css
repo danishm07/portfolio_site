@@ -58,25 +58,17 @@
   z-index: 2;
   text-align: center;
   padding: 3.5rem 1.5rem 2.25rem;
-  pointer-events: none;
 }
 
 .name {
   font-family: var(--font-serif);
   font-weight: 400;
+  font-style: normal;
   font-size: clamp(32px, 4.5vw, 48px);
   color: var(--ink);
   line-height: 1.1;
   white-space: nowrap;
   animation: heroNameIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
-}
-
-.firstName {
-  font-style: italic;
-}
-
-.lastName {
-  font-style: normal;
 }
 
 .rule {
@@ -98,6 +90,34 @@
   animation: heroDescIn 0.5s ease 0.65s both;
 }
 
+.aboutTrigger {
+  margin-top: 1rem;
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--dust);
+  animation: heroDescIn 0.5s ease 0.8s both;
+}
+
+.aboutSep {
+  color: var(--dust);
+}
+
+.aboutLink {
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  color: var(--dust);
+  transition: color 0.2s ease;
+  pointer-events: auto;
+}
+
+.aboutLink:hover {
+  color: var(--ink);
+}
+
 @media (max-width: 767px) {
   .canvas {
     display: none;
@@ -106,5 +126,16 @@
 
   .name {
     white-space: normal;
+    font-size: 36px;
+  }
+
+  .descriptor {
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .name {
+    font-size: clamp(36px, 4.5vw, 52px);
   }
 }

@@ -61,6 +61,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transform: translateZ(0);
 }
 
 .artPlaceholder {
@@ -129,6 +130,62 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.writeupLink {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sage);
+  transition: color 0.2s ease;
+}
+
+.writeupLink:hover {
+  color: var(--ink);
+}
+
+.cardLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.3rem;
+  pointer-events: auto;
+}
+
+.githubLink {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dust);
+  transition: color 0.2s ease;
+}
+
+.githubLink:hover {
+  color: var(--ink);
+}
+
+.gridCard {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none !important;
+  opacity: 1 !important;
+  backface-visibility: visible;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.gridCard:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 12px 28px rgba(24, 22, 15, 0.09);
+  border-color: var(--sage);
+}
+
+.gridCard.active .inner {
+  animation: none;
 }
 
 @media (max-width: 1199px) and (min-width: 768px) {

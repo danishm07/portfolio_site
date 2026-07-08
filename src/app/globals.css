@@ -50,3 +50,15 @@ img {
   display: block;
   max-width: 100%;
 }
+
+/* Keep halftone art grain crisp when scaled */
+.halftoneArt {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Slightly heavier serif rendering — less antialiased smoothing */
+.serifBlock {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}

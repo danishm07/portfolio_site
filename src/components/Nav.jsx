@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { openPdfPopup } from '@/lib/assetPath';
 import styles from './Nav.module.css';
 
 const LINKS = [
@@ -31,6 +32,11 @@ export default function Nav() {
             href={link.href}
             className={styles.link}
             data-nav-item
+            onClick={(event) => {
+              if (link.label === 'Resume') {
+                openPdfPopup(event, link.href);
+              }
+            }}
             target={link.href.startsWith('http') ? '_blank' : undefined}
             rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
           >

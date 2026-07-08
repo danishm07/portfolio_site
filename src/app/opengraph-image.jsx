@@ -24,8 +24,7 @@ export default function OpenGraphImage() {
           style={{
             fontSize: 72,
             fontFamily: 'Georgia, serif',
-            fontStyle: 'italic',
-            marginBottom: 8,
+            marginBottom: 32,
           }}
         >
           Danish
@@ -55,7 +54,7 @@ export default function OpenGraphImage() {
             color: '#9A9488',
           }}
         >
-          AI Engineer · Chicago
+         Chicago
         </div>
       </div>
     ),

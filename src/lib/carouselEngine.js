@@ -1,5 +1,3 @@
-import { projects } from '@/data/projects';
-
 export const FRICTION = 0.9;
 export const WHEEL_SENS = 0.012;
 export const DRAG_SENS = 0.01;
@@ -49,11 +47,13 @@ function readCardIndex(el) {
   return Number(el.getAttribute('data-carousel-card'));
 }
 
-export function createCarouselEngine(rigEl, { onActiveIndex } = {}) {
-  const itemCount = projects.length;
+export function createCarouselEngine(
+  rigEl,
+  { onActiveIndex, itemCount, initialOffset = 0 } = {}
+) {
   const angleStep = 360 / itemCount;
 
-  let offset = 0;
+  let offset = initialOffset;
   let velocity = 0;
   let dragging = false;
   let dragStartX = 0;
@@ -84,7 +84,6 @@ export function createCarouselEngine(rigEl, { onActiveIndex } = {}) {
       const hideAngle = 128;
       const opacity =
         abs >= hideAngle ? 0 : Math.max(0.34, 1 - (abs / hideAngle) * 0.38);
-
       el.style.transform = `translate(-50%, -50%) rotateY(${slotAngle}deg) translateZ(${radius}px)`;
       el.style.opacity = String(opacity);
       el.style.zIndex = String(Math.round(100 - abs));
@@ -122,7 +121,6 @@ export function createCarouselEngine(rigEl, { onActiveIndex } = {}) {
 
   function onWheel(e) {
     if (isMobileViewport()) return;
-    // Horizontal trackpad swipe only — vertical scroll goes to the page
     if (Math.abs(e.deltaX) < 2) return;
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     e.preventDefault();

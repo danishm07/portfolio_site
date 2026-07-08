@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "rm -rf .next && next dev",
+    "hash-art": "node scripts/hash-art.js",
+    "predev": "node scripts/hash-art.js",
+    "prebuild": "node scripts/hash-art.js",
     "build": "next build",
     "build:pages": "GITHUB_PAGES=true next build",
     "start": "next start",
